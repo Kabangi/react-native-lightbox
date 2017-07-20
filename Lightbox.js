@@ -6,6 +6,7 @@
 var PropTypes = require('prop-types');
 
 var React = require('react');
+var createReactClass = require('create-react-class');
 var {
   Children,
   cloneElement
@@ -19,7 +20,8 @@ var TimerMixin = require('react-timer-mixin');
 
 var LightboxOverlay = require('./LightboxOverlay');
 
-var Lightbox = React.createClass({
+var Lightbox = createReactClass({
+  displayName: 'Lightbox',
   mixins: [TimerMixin],
 
   propTypes: {
@@ -152,7 +154,7 @@ var Lightbox = React.createClass({
         {this.props.navigator ? false : <LightboxOverlay {...this.getOverlayProps()} />}
       </View>
     );
-  }
+  },
 });
 
 module.exports = Lightbox;

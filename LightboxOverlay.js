@@ -16,74 +16,71 @@ var {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } = require('react-native');
 
 var WINDOW_HEIGHT = Dimensions.get('window').height;
 var WINDOW_WIDTH = Dimensions.get('window').width;
 var DRAG_DISMISS_THRESHOLD = 150;
-var STATUS_BAR_OFFSET = (Platform.OS === 'android' ? -25 : 0);
+var STATUS_BAR_OFFSET = Platform.OS === 'android' ? -25 : 0;
 
-var LightboxOverlay = React.createClass({
-  propTypes: {
+class LightboxOverlay extends React.Component {
+  static propTypes = {
     origin: PropTypes.shape({
-      x:        PropTypes.number,
-      y:        PropTypes.number,
-      width:    PropTypes.number,
-      height:   PropTypes.number,
+      x: PropTypes.number,
+      y: PropTypes.number,
+      width: PropTypes.number,
+      height: PropTypes.number
     }),
     springConfig: PropTypes.shape({
-      tension:  PropTypes.number,
-      friction: PropTypes.number,
+      tension: PropTypes.number,
+      friction: PropTypes.number
     }),
     backgroundColor: PropTypes.string,
-    isOpen:          PropTypes.bool,
-    renderHeader:    PropTypes.func,
-    onOpen:          PropTypes.func,
-    onClose:         PropTypes.func,
-    swipeToDismiss:  PropTypes.bool,
-  },
+    isOpen: PropTypes.bool,
+    renderHeader: PropTypes.func,
+    onOpen: PropTypes.func,
+    onClose: PropTypes.func,
+    swipeToDismiss: PropTypes.bool
+  };
 
-  getInitialState: function() {
-    return {
-      isAnimating: false,
-      isPanning: false,
-      target: {
-        x: 0,
-        y: 0,
-        opacity: 1,
-      },
-      pan: new Animated.Value(0),
-      openVal: new Animated.Value(0),
-    };
-  },
+  static defaultProps = {
+    springConfig: { tension: 30, friction: 7 },
+    backgroundColor: 'black'
+  };
 
-  getDefaultProps: function() {
-    return {
-      springConfig: { tension: 30, friction: 7 },
-      backgroundColor: 'black',
-    };
-  },
+  state = {
+    isAnimating: false,
+    isPanning: false,
+    target: {
+      x: 0,
+      y: 0,
+      opacity: 1
+    },
+    pan: new Animated.Value(0),
+    openVal: new Animated.Value(0)
+  };
 
-  componentWillMount: function() {
+  componentWillMount() {
     this._panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => !this.state.isAnimating,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => !this.state.isAnimating,
-      onMoveShouldSetPanResponder: (evt, gestureState) => !this.state.isAnimating,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !this.state.isAnimating,
+      onStartShouldSetPanResponder: (evt, gestureState) =>
+        !this.state.isAnimating,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) =>
+        !this.state.isAnimating,
+      onMoveShouldSetPanResponder: (evt, gestureState) =>
+        !this.state.isAnimating,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) =>
+        !this.state.isAnimating,
 
       onPanResponderGrant: (evt, gestureState) => {
         this.state.pan.setValue(0);
         this.setState({ isPanning: true });
       },
-      onPanResponderMove: Animated.event([
-        null,
-        {dy: this.state.pan}
-      ]),
+      onPanResponderMove: Animated.event([null, { dy: this.state.pan }]),
       onPanResponderTerminationRequest: (evt, gestureState) => true,
       onPanResponderRelease: (evt, gestureState) => {
-        if(Math.abs(gestureState.dy) > DRAG_DISMISS_THRESHOLD) {
+        if (Math.abs(gestureState.dy) > DRAG_DISMISS_THRESHOLD) {
           this.setState({
             isPanning: false,
             target: {
@@ -94,22 +91,24 @@ var LightboxOverlay = React.createClass({
           });
           this.close();
         } else {
-          Animated.spring(
-            this.state.pan,
-            {toValue: 0, ...this.props.springConfig}
-          ).start(() => { this.setState({ isPanning: false }); });
+          Animated.spring(this.state.pan, {
+            toValue: 0,
+            ...this.props.springConfig
+          }).start(() => {
+            this.setState({ isPanning: false });
+          });
         }
-      },
+      }
     });
-  },
+  }
 
-  componentDidMount: function() {
-    if(this.props.isOpen) {
+  componentDidMount() {
+    if (this.props.isOpen) {
       this.open();
     }
-  },
+  }
 
-  open: function() {
+  open = () => {
     StatusBar.setHidden(true, 'fade');
     this.state.pan.setValue(0);
     this.setState({
@@ -117,94 +116,121 @@ var LightboxOverlay = React.createClass({
       target: {
         x: 0,
         y: 0,
-        opacity: 1,
+        opacity: 1
       }
     });
 
-    Animated.spring(
-      this.state.openVal,
-      { toValue: 1, ...this.props.springConfig }
-    ).start(() => this.setState({ isAnimating: false }));
-  },
+    Animated.spring(this.state.openVal, {
+      toValue: 1,
+      ...this.props.springConfig
+    }).start(() => this.setState({ isAnimating: false }));
+  };
 
-  close: function() {
+  close = () => {
     StatusBar.setHidden(false, 'fade');
     this.setState({
-      isAnimating: true,
+      isAnimating: true
     });
-    Animated.spring(
-      this.state.openVal,
-      { toValue: 0, ...this.props.springConfig }
-    ).start(() => {
+    Animated.spring(this.state.openVal, {
+      toValue: 0,
+      ...this.props.springConfig
+    }).start(() => {
       this.setState({
-        isAnimating: false,
+        isAnimating: false
       });
       this.props.onClose();
     });
-  },
+  };
 
-  componentWillReceiveProps: function(props) {
-    if(this.props.isOpen != props.isOpen && props.isOpen) {
+  componentWillReceiveProps(props) {
+    if (this.props.isOpen != props.isOpen && props.isOpen) {
       this.open();
     }
-  },
+  }
 
-  render: function() {
+  render() {
     var {
       isOpen,
       renderHeader,
       swipeToDismiss,
       origin,
-      backgroundColor,
+      backgroundColor
     } = this.props;
 
-    var {
-      isPanning,
-      isAnimating,
-      openVal,
-      target,
-    } = this.state;
-
+    var { isPanning, isAnimating, openVal, target } = this.state;
 
     var lightboxOpacityStyle = {
-      opacity: openVal.interpolate({inputRange: [0, 1], outputRange: [0, target.opacity]})
+      opacity: openVal.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, target.opacity]
+      })
     };
 
     var handlers;
-    if(swipeToDismiss) {
+    if (swipeToDismiss) {
       handlers = this._panResponder.panHandlers;
     }
 
     var dragStyle;
-    if(isPanning) {
+    if (isPanning) {
       dragStyle = {
-        top: this.state.pan,
+        top: this.state.pan
       };
-      lightboxOpacityStyle.opacity = this.state.pan.interpolate({inputRange: [-WINDOW_HEIGHT, 0, WINDOW_HEIGHT], outputRange: [0, 1, 0]});
+      lightboxOpacityStyle.opacity = this.state.pan.interpolate({
+        inputRange: [-WINDOW_HEIGHT, 0, WINDOW_HEIGHT],
+        outputRange: [0, 1, 0]
+      });
     }
 
-    var openStyle = [styles.open, {
-      left:   openVal.interpolate({inputRange: [0, 1], outputRange: [origin.x, target.x]}),
-      top:    openVal.interpolate({inputRange: [0, 1], outputRange: [origin.y + STATUS_BAR_OFFSET, target.y + STATUS_BAR_OFFSET]}),
-      width:  openVal.interpolate({inputRange: [0, 1], outputRange: [origin.width, WINDOW_WIDTH]}),
-      height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, WINDOW_HEIGHT]}),
-    }];
+    var openStyle = [
+      styles.open,
+      {
+        left: openVal.interpolate({
+          inputRange: [0, 1],
+          outputRange: [origin.x, target.x]
+        }),
+        top: openVal.interpolate({
+          inputRange: [0, 1],
+          outputRange: [
+            origin.y + STATUS_BAR_OFFSET,
+            target.y + STATUS_BAR_OFFSET
+          ]
+        }),
+        width: openVal.interpolate({
+          inputRange: [0, 1],
+          outputRange: [origin.width, WINDOW_WIDTH]
+        }),
+        height: openVal.interpolate({
+          inputRange: [0, 1],
+          outputRange: [origin.height, WINDOW_HEIGHT]
+        })
+      }
+    ];
 
-    var background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor }, lightboxOpacityStyle]}></Animated.View>);
-    var header = (<Animated.View style={[styles.header, lightboxOpacityStyle]}>{(renderHeader ?
-      renderHeader(this.close) :
-      (
-        <TouchableOpacity onPress={this.close}>
-          <Text style={styles.closeButton}>×</Text>
-        </TouchableOpacity>
-      )
-    )}</Animated.View>);
+    var background = (
+      <Animated.View
+        style={[
+          styles.background,
+          { backgroundColor: backgroundColor },
+          lightboxOpacityStyle
+        ]}
+      />
+    );
+    var header = (
+      <Animated.View style={[styles.header, lightboxOpacityStyle]}>
+        {renderHeader
+          ? renderHeader(this.close)
+          : <TouchableOpacity onPress={this.close}>
+              <Text style={styles.closeButton}>×</Text>
+            </TouchableOpacity>}
+      </Animated.View>
+    );
     var content = (
       <Animated.View style={[openStyle, dragStyle]} {...handlers}>
         {this.props.children}
       </Animated.View>
     );
-    if(this.props.navigator) {
+    if (this.props.navigator) {
       return (
         <View>
           {background}
@@ -221,7 +247,7 @@ var LightboxOverlay = React.createClass({
       </Modal>
     );
   }
-});
+}
 
 var styles = StyleSheet.create({
   background: {
@@ -229,21 +255,21 @@ var styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT,
+    height: WINDOW_HEIGHT
   },
   open: {
     position: 'absolute',
     flex: 1,
     justifyContent: 'center',
     // Android pan handlers crash without this declaration:
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
   header: {
     position: 'absolute',
     top: 0,
     left: 0,
     width: WINDOW_WIDTH,
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
   closeButton: {
     fontSize: 35,
@@ -253,12 +279,12 @@ var styles = StyleSheet.create({
     textAlign: 'center',
     shadowOffset: {
       width: 0,
-      height: 0,
+      height: 0
     },
     shadowRadius: 1.5,
     shadowColor: 'black',
-    shadowOpacity: 0.8,
-  },
+    shadowOpacity: 0.8
+  }
 });
 
 module.exports = LightboxOverlay;

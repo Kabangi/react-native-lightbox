@@ -23,8 +23,8 @@ var Carousel = require('react-native-looped-carousel');
 var WINDOW_WIDTH = Dimensions.get('window').width;
 var BASE_PADDING = 10;
 
-var LightboxView = React.createClass({
-  renderCarousel: function() {
+class LightboxView extends React.Component {
+  renderCarousel = () => {
     return (
       <Carousel style={{ width: WINDOW_WIDTH, height: WINDOW_WIDTH }}>
         <Image
@@ -37,9 +37,9 @@ var LightboxView = React.createClass({
         <View style={{backgroundColor:'#E67E22',flex: 1}}/>
       </Carousel>
     );
-  },
+  };
 
-  render: function() {
+  render() {
     return (
       <ScrollView style={styles.container}>
         <View style={styles.text}><Text>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </Text></View>
@@ -82,20 +82,19 @@ var LightboxView = React.createClass({
         <View style={styles.text}><Text>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </Text></View>
       </ScrollView>
     );
-  },
-});
+  }
+}
 
-
-var Example = React.createClass({
-  renderScene: function(route, navigator) {
+class Example extends React.Component {
+  renderScene = (route, navigator) => {
     var Component = route.component;
 
     return (
       <Component navigator={navigator} route={route} {...route.passProps} />
     );
-  },
+  };
 
-  render: function() {
+  render() {
     return (
       <Navigator
         ref="navigator"
@@ -107,7 +106,7 @@ var Example = React.createClass({
       />
     );
   }
-});
+}
 
 var styles = StyleSheet.create({
   navigator: {
